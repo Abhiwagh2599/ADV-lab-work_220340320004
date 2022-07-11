@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xsi:schemaLocation=" http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context" xmlns="http://www.springframework.org/schema/beans">
+
+<!-- loading annotated beans -->
+
+
+<context:component-scan base-package="com.cdac.component"/>
+
+<!-- DataSource configuration -->
+
+
+<!-- Issue with the below configuration is:We haven't configured the pool size yet -->
+
+
+<!-- <bean name="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"><property name="driverClassName" value="com.mysql.cj.jdbc.Driver" /><property name="url" value="jdbc:mysql://localhost:3306/cdac" /><property name="username" value="root" /><property name="password" value="passw0rd" /></bean> -->
+
+
+
+<bean init-method="start" class="org.apache.commons.dbcp2.BasicDataSource" id="dataSource">
+
+<property value="com.mysql.cj.jdbc.Driver" name="driverClassName"/>
+
+<property value="jdbc:mysql://localhost:3306/cdac" name="url"/>
+
+<property value="root" name="username"/>
+
+<property value="cdac" name="password"/>
+
+<property value="3" name="initialSize"/>
+
+</bean>
+
+<!-- Spring & Hibernate Integration settings -->
+
+
+<!-- This bean configuration will help us create the EntityManagerFactory & EntityManager object -->
+
+
+<!-- Also no need of separate META-INF/persistence.xml, as the required settingscan be done here itself within the bean -->
+
+
+
+<bean class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" id="myEmf">
+
+<property name="dataSource" ref="dataSource"/>
+
+<!-- Reference of above DataSource -->
+
+
+<property value="com.cdac.component" name="packagesToScan"/>
+
+<!-- Location of @Entity classes -->
+
+
+
+<property name="jpaVendorAdapter">
+
+<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"/>
+
+</property>
+
+
+<property name="jpaProperties">
+
+
+<props>
+
+<prop key="hibernate.hbm2ddl.auto">update</prop>
+
+<prop key="hibernate.show_sql">true</prop>
+
+</props>
+
+</property>
+
+</bean>
+
+<!-- This bean entry is responsible for providing us with the support formanaging transactions in our application -->
+
+
+
+<bean class="org.springframework.orm.jpa.JpaTransactionManager" id="transactionManager">
+
+<property name="entityManagerFactory" ref="myEmf"/>
+
+</bean>
+
+<tx:annotation-driven/>
+
+</beans>
